@@ -1477,11 +1477,12 @@ func (s *server) SendSticker() http.HandlerFunc {
 // Sends Video message
 func (s *server) SendVideo() http.HandlerFunc {
 
-	type imageStruct struct {
+	type videoStruct struct {
 		Phone         string
 		Video         string
 		Caption       string
 		Id            string
+		Seconds       uint32
 		JPEGThumbnail []byte
 		MimeType      string
 		ContextInfo   waE2E.ContextInfo
@@ -1500,7 +1501,7 @@ func (s *server) SendVideo() http.HandlerFunc {
 		}
 
 		decoder := json.NewDecoder(r.Body)
-		var t imageStruct
+		var t videoStruct
 		err := decoder.Decode(&t)
 		if err != nil {
 			s.Respond(w, r, http.StatusBadRequest, errors.New("could not decode Payload"))
@@ -1587,6 +1588,11 @@ func (s *server) SendVideo() http.HandlerFunc {
 			FileLength:    proto.Uint64(uint64(len(filedata))),
 			JPEGThumbnail: t.JPEGThumbnail,
 		}}
+
+		// Only set Seconds if provided
+		if t.Seconds > 0 {
+			msg.VideoMessage.Seconds = proto.Uint32(t.Seconds)
+		}
 
 		if t.ContextInfo.StanzaID != nil {
 			var qm *waE2E.Message
