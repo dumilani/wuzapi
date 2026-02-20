@@ -1068,9 +1068,13 @@ func (s *server) SendAudio() http.HandlerFunc {
 			FileSHA256:    uploaded.FileSHA256,
 			FileLength:    proto.Uint64(uint64(len(filedata))),
 			PTT:           &ptt,
-			Seconds:       proto.Uint32(t.Seconds),
 			Waveform:      t.Waveform,
 		}}
+
+		// Only set Seconds if provided; let WhatsApp auto-detect duration otherwise
+		if t.Seconds > 0 {
+			msg.AudioMessage.Seconds = proto.Uint32(t.Seconds)
+		}
 
 		if t.ContextInfo.StanzaID != nil {
 			var qm *waE2E.Message
@@ -1482,6 +1486,7 @@ func (s *server) SendVideo() http.HandlerFunc {
 		Video         string
 		Caption       string
 		Id            string
+		Seconds       uint32
 		JPEGThumbnail []byte
 		MimeType      string
 		ContextInfo   waE2E.ContextInfo
@@ -1587,6 +1592,11 @@ func (s *server) SendVideo() http.HandlerFunc {
 			FileLength:    proto.Uint64(uint64(len(filedata))),
 			JPEGThumbnail: t.JPEGThumbnail,
 		}}
+
+		// Only set Seconds if provided; let WhatsApp auto-detect duration otherwise
+		if t.Seconds > 0 {
+			msg.VideoMessage.Seconds = proto.Uint32(t.Seconds)
+		}
 
 		if t.ContextInfo.StanzaID != nil {
 			var qm *waE2E.Message
